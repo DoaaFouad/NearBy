@@ -1,0 +1,10 @@
+<component name="CopyrightManager">
+  <settings default="Doaa Fouad">
+    <module2copyright>
+      <element module="All" copyright="Doaa Fouad" />
+    </module2copyright>
+    <LanguageOptions name="__TEMPLATE__">
+      <option name="relativeBefore" value="false" />
+    </LanguageOptions>
+  </settings>
+</component>
