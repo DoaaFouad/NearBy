@@ -14,5 +14,5 @@ import org.koin.dsl.module
 
 val repositoryModule = module {
 
-    single<LocationsRepository> { LocationsRepository() }
+    single { LocationsRepository(get()) }
 }

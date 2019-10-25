@@ -9,9 +9,20 @@
 
 package com.doaa.nearby.viewmodel
 
-import androidx.lifecycle.ViewModel
+import com.doaa.nearby.model.Location
 import com.doaa.nearby.repository.LocationsRepository
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 
-class HomeActivityViewModel(val repo: LocationsRepository) : ViewModel() {
+class HomeActivityViewModel(val repo: LocationsRepository) : BaseViewModel() {
+
+    fun requestNearbyLocations(currentLocation: Location) {
+        val locationsObservable = repo.fetchNearbyLocations(currentLocation)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe()
+
+        compositeDisposable.add(locationsObservable)
+    }
 
 }

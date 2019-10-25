@@ -10,6 +10,7 @@
 package com.doaa.nearby.view
 
 import com.doaa.nearby.R
+import com.doaa.nearby.model.Location
 import com.doaa.nearby.viewmodel.HomeActivityViewModel
 import org.koin.android.ext.android.inject
 
@@ -17,5 +18,4 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
 
     override val viewModel by inject<HomeActivityViewModel>()
     override val layoutRes = R.layout.home_activity
-
 }

@@ -9,6 +9,20 @@
 
 package com.doaa.nearby.repository
 
-class LocationsRepository {
+import com.doaa.nearby.model.Location
+import com.doaa.nearby.model.response.LocationsResponse
+import com.doaa.nearby.networking.APIService
+import com.doaa.nearby.util.Constants
+import io.reactivex.Single
 
+class LocationsRepository(val apiService: APIService) {
+
+    fun fetchNearbyLocations(location: Location): Single<LocationsResponse> =
+        apiService.getNearbyLocations(
+            "${location.lat},${location.lng}",
+            Constants.EXPLORE_RADIUS,
+            Constants.CLIENT_ID,
+            Constants.CLIENT_SECRET,
+            Constants.VERSIONING
+        )
 }
