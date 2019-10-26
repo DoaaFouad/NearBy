@@ -23,7 +23,7 @@ class Constants {
         const val MY_PERMISSIONS_REQUEST_FINE_LOCATION = 2000
 
         //Config
-        const val LOCATIONS_UPDATES_INTERVAL = 10000L
+        const val LOCATIONS_UPDATES_INTERVAL = 5000L
         const val LOCATIONS_UPDATES_FATEST_INTERVAL = 5000L
         const val CHECK_METERS_ALLOWED = 500 // in meters
 

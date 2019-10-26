@@ -25,6 +25,7 @@ import kotlinx.android.synthetic.main.home_activity.*
 import org.koin.android.ext.android.inject
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 
 
 class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
@@ -50,12 +51,21 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
             this.lifecycle
         }, { if (it) showLoading() else hideLoading() })
 
+        viewModel.errorState().observe({
+            this.lifecycle
+        }, { if (it) showError() else hideError() })
+
+        viewModel.nullState().observe({
+            this.lifecycle
+        }, { if (it) showNullState() else hideNullState() })
+
         viewModel.updatedPlaces().observe({
             this.lifecycle
         }, { places ->
             handlePlacesData(places)
         })
 
+        // according to user realtime config decide start or stop location updates requests
         viewModel.realTimeConfig().observe({
             this.lifecycle
         }, {
@@ -64,7 +74,6 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
                 setRealTimeConfigUI(false)
             } else {
                 stopLocationUpdates()
-                getLastKnownLocation()
                 setRealTimeConfigUI(true)
             }
         })
@@ -82,6 +91,7 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     * Handle observed places data and set it to adapter's data
     */
     private fun handlePlacesData(places: PlacesResponse) {
+        rv_places?.visibility = View.VISIBLE
         placeAdapter.setData(places.response?.groups?.get(0)?.items)
     }
 
@@ -113,7 +123,13 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     }
 
     private fun getLastKnownLocation() {
-       // fusedLocationClient.lastLocation?.result?.let { viewModel.calculateDistance(it) }
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener {
+                it?.let { viewModel.calculateDistance(it) }
+                    ?: kotlin.run { showError() } //Sometimes last location returns null if the device is new or restored
+            }.addOnFailureListener {
+                showError()
+            }
     }
 
     private fun startLocationUpdates() {
@@ -143,6 +159,25 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
         }
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>, grantResults: IntArray
+    ) {
+        when (requestCode) {
+            Constants.MY_PERMISSIONS_REQUEST_FINE_LOCATION -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    getLastKnownLocation() //If permission granted, then get last known location
+                } else {
+                    // do nothing, error state already shown
+                }
+                return
+            }
+            else -> {
+                // do nothing, error state already shown
+            }
+        }
+    }
+
     private fun showLoading() {
 
     }
@@ -152,20 +187,32 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     }
 
     private fun showError() {
-
+        layout_error?.visibility = View.VISIBLE
+        layout_null?.visibility = View.GONE
+        rv_places?.visibility = View.GONE
     }
 
     private fun showNullState() {
+        layout_error?.visibility = View.GONE
+        layout_null?.visibility = View.VISIBLE
+        rv_places?.visibility = View.GONE
+    }
 
+    private fun hideError() {
+        layout_error?.visibility = View.GONE
+    }
+
+    private fun hideNullState() {
+        layout_null?.visibility = View.GONE
     }
 
     /**
      * Customizable action bar
      */
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        this.menu = menu
         val inflater = menuInflater
         inflater.inflate(com.doaa.nearby.R.menu.action_bar, menu)
-        this.menu = menu
 
         return true
     }
@@ -194,6 +241,12 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
             }
             it.findItem(R.id.action_settings).title = title
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        getLastKnownLocation()
     }
 
     override fun onStop() {

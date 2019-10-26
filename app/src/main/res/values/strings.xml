@@ -5,4 +5,8 @@
     <string name="actionbar_realtime_on">RealTime On</string>
     <string name="actionbar_realtime_off">RealTime OFF</string>
 
+    <!-- Home -->
+    <string name="home_error">Something went wrong!</string>
+    <string name="home_null">No data found!</string>
+
 </resources>

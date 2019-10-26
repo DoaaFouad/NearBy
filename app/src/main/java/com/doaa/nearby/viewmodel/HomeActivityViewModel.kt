@@ -10,7 +10,6 @@
 package com.doaa.nearby.viewmodel
 
 import android.location.Location
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.doaa.nearby.model.response.PlacesResponse
 import com.doaa.nearby.repository.PlacesRepository
@@ -24,6 +23,8 @@ class HomeActivityViewModel(val placesRepo: PlacesRepository, val sharedPrefRepo
     private var isLoading = MutableLiveData<Boolean>()
     private var places = MutableLiveData<PlacesResponse>()
     private var realTimeConfig = MutableLiveData<Boolean>()
+    private var nullState = MutableLiveData<Boolean>()
+    private var errorState = MutableLiveData<Boolean>()
 
     private var lastKnownLocation: Location? = null
 
@@ -48,13 +49,21 @@ class HomeActivityViewModel(val placesRepo: PlacesRepository, val sharedPrefRepo
     }
 
     private fun handleNearbyPlacesSuccess(places: PlacesResponse) {
-        this.places.value = places
+        if (places.response?.totalResults == 0) {
+            nullState.value = true
+        } else {
+            this.places.value = places
+            nullState.value = false
+        }
         isLoading.value = false
+        errorState.value = false
     }
 
     private fun handleNearbyPlacesFailure(err: Throwable) {
+        errorState.value = true
         isLoading.value = false
     }
+
     /*
     * Calculate distance in meters between two latlng points,
     * If greater than X meters => make fetch request
@@ -71,12 +80,22 @@ class HomeActivityViewModel(val placesRepo: PlacesRepository, val sharedPrefRepo
                 currentLocation.longitude,
                 results
             )
-            if(results[0] > Constants.CHECK_METERS_ALLOWED){
-                requestNearbyPlaces(com.doaa.nearby.model.Location(currentLocation.latitude, currentLocation.longitude))
+            if (results[0] > Constants.CHECK_METERS_ALLOWED) {
+                requestNearbyPlaces(
+                    com.doaa.nearby.model.Location(
+                        currentLocation.latitude,
+                        currentLocation.longitude
+                    )
+                )
                 lastKnownLocation = currentLocation
             }
         } ?: kotlin.run {
-            requestNearbyPlaces(com.doaa.nearby.model.Location(currentLocation.latitude, currentLocation.longitude))
+            requestNearbyPlaces(
+                com.doaa.nearby.model.Location(
+                    currentLocation.latitude,
+                    currentLocation.longitude
+                )
+            )
             lastKnownLocation = currentLocation
         }
     }
@@ -84,17 +103,29 @@ class HomeActivityViewModel(val placesRepo: PlacesRepository, val sharedPrefRepo
     /*
     * Remember user realtime/single config by saving it to shared pref
     */
-    fun setRealTimeUpdateConfig(){
+    fun setRealTimeUpdateConfig() {
         val newRealTimeConfig = realTimeConfig.value?.not()
-        newRealTimeConfig?.let { sharedPrefRepo.putBoolean(Constants.BOOLEAN_REATIME_CONFIG, it)}
+        realTimeConfig.value = newRealTimeConfig
+        newRealTimeConfig?.let { sharedPrefRepo.putBoolean(Constants.BOOLEAN_REATIME_CONFIG, it) }
     }
 
     fun getRealTimeUpdateConfig(): Boolean? {
-      return sharedPrefRepo.getBoolean(Constants.BOOLEAN_REATIME_CONFIG, true) //default is realtime on = true
+        return sharedPrefRepo.getBoolean(
+            Constants.BOOLEAN_REATIME_CONFIG,
+            true
+        ) //default is realtime on = true
     }
 
     fun isLoading(): MutableLiveData<Boolean> {
         return this.isLoading
+    }
+
+    fun errorState(): MutableLiveData<Boolean> {
+        return this.errorState
+    }
+
+    fun nullState(): MutableLiveData<Boolean> {
+        return this.nullState
     }
 
     fun updatedPlaces(): MutableLiveData<PlacesResponse> {

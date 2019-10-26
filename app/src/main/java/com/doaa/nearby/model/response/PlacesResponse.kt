@@ -22,7 +22,8 @@ data class MetaData(
 )
 
 data class ResponseData(
-    @SerializedName("groups") var groups: MutableList<GroupData>?
+    @SerializedName("groups") var groups: MutableList<GroupData>?,
+    @SerializedName("totalResults") var totalResults: Int?
 )
 
 data class GroupData(
