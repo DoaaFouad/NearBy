@@ -25,6 +25,7 @@ class Constants {
         //Config
         const val LOCATIONS_UPDATES_INTERVAL = 10000L
         const val LOCATIONS_UPDATES_FATEST_INTERVAL = 5000L
+        const val CHECK_METERS_ALLOWED = 500 // in meters
 
     }
 }

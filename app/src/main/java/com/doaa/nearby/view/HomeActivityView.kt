@@ -11,6 +11,7 @@ package com.doaa.nearby.view
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -30,9 +31,12 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     override val layoutRes = R.layout.home_activity
 
     private val placeAdapter = PlaceAdapter()
+
     //Location services
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
+
+    private var lastKnownLocation: Location? = null
 
 
     override fun initViews() {
@@ -44,6 +48,10 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
         viewModel.isLoading().observe({
             this.lifecycle
         }, { if (it) showLoading() else hideLoading() })
+
+        viewModel.doRequestNewUpdate().observe({
+            this.lifecycle
+        }, { if (it) requestToFetchPlaces(lastKnownLocation) })
     }
 
     /*
@@ -94,7 +102,8 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult ?: return
-                requestToFetchPlaces(locationResult.lastLocation)
+                lastKnownLocation = locationResult.lastLocation
+                viewModel.calculateDistance(locationResult.lastLocation)
             }
         }
     }
