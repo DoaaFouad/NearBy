@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">NearBy</string>
+
+    <!-- action bar -->
+    <string name="actionbar_realtime_on">RealTime On</string>
+    <string name="actionbar_realtime_off">RealTime OFF</string>
+
 </resources>

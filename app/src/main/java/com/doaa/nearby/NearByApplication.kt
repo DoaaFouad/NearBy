@@ -10,6 +10,7 @@
 package com.doaa.nearby
 
 import android.app.Application
+import android.content.Context
 import com.doaa.nearby.di.apiModule
 import com.doaa.nearby.di.repositoryModule
 import com.doaa.nearby.di.viewModelModule
@@ -33,4 +34,8 @@ class NearByApplication : Application() {
         }
     }
 
+    companion object {
+        const val SHARED_PREF_NAME = "NEARBY_SHARED_PREF"
+        const val SHARED_PREF_MODE = Context.MODE_PRIVATE
+    }
 }

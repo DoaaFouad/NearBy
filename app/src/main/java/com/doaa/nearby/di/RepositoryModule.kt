@@ -9,10 +9,15 @@
 
 package com.doaa.nearby.di
 
+import com.doaa.nearby.NearByApplication
 import com.doaa.nearby.repository.PlacesRepository
+import com.doaa.nearby.repository.SharedPreferencesRepository
+import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 val repositoryModule = module {
 
     single { PlacesRepository(get()) }
+
+    single { SharedPreferencesRepository(this.androidContext().getSharedPreferences(NearByApplication.SHARED_PREF_NAME, NearByApplication.SHARED_PREF_MODE)) }
 }

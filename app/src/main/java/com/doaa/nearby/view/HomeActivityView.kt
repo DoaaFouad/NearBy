@@ -11,7 +11,6 @@ package com.doaa.nearby.view
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -24,6 +23,9 @@ import com.doaa.nearby.viewmodel.HomeActivityViewModel
 import com.google.android.gms.location.*
 import kotlinx.android.synthetic.main.home_activity.*
 import org.koin.android.ext.android.inject
+import android.view.Menu
+import android.view.MenuItem
+
 
 class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
 
@@ -35,6 +37,8 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     //Location services
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
+
+    private var menu: Menu? = null
 
     override fun initViews() {
         setUpPlacesRecyclerViewer()
@@ -48,8 +52,21 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
 
         viewModel.updatedPlaces().observe({
             this.lifecycle
+        }, { places ->
+            handlePlacesData(places)
+        })
+
+        viewModel.realTimeConfig().observe({
+            this.lifecycle
         }, {
-                places -> handlePlacesData(places)
+            if (it) {
+                startLocationUpdates()
+                setRealTimeConfigUI(false)
+            } else {
+                stopLocationUpdates()
+                getLastKnownLocation()
+                setRealTimeConfigUI(true)
+            }
         })
     }
 
@@ -95,6 +112,10 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
         }
     }
 
+    private fun getLastKnownLocation() {
+       // fusedLocationClient.lastLocation?.result?.let { viewModel.calculateDistance(it) }
+    }
+
     private fun startLocationUpdates() {
         fusedLocationClient.requestLocationUpdates(
             locationRequestConfig(),
@@ -104,7 +125,7 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     }
 
     private fun stopLocationUpdates() {
-      fusedLocationClient.removeLocationUpdates(locationCallback)
+        fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
     private fun checkUserPermissions() {
@@ -138,10 +159,41 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
 
     }
 
-    override fun onResume() {
-        super.onResume()
+    /**
+     * Customizable action bar
+     */
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(com.doaa.nearby.R.menu.action_bar, menu)
+        this.menu = menu
 
-        startLocationUpdates()
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            // action with ID action_settings was selected
+            R.id.action_settings -> viewModel.setRealTimeUpdateConfig()
+            else -> {
+            }
+        }
+
+        return true
+    }
+
+    /**
+     * Set menu item title according to the realtime config mode
+     * @param isOn true if realTime config is true
+     */
+    private fun setRealTimeConfigUI(isOn: Boolean) {
+        menu?.let {
+            val title = if (isOn) {
+                getString(R.string.actionbar_realtime_on)
+            } else {
+                getString(R.string.actionbar_realtime_off)
+            }
+            it.findItem(R.id.action_settings).title = title
+        }
     }
 
     override fun onStop() {

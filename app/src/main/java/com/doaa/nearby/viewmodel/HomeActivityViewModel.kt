@@ -10,18 +10,26 @@
 package com.doaa.nearby.viewmodel
 
 import android.location.Location
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.doaa.nearby.model.response.PlacesResponse
 import com.doaa.nearby.repository.PlacesRepository
+import com.doaa.nearby.repository.SharedPreferencesRepository
 import com.doaa.nearby.util.Constants
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
-class HomeActivityViewModel(val repo: PlacesRepository) : BaseViewModel() {
+class HomeActivityViewModel(val placesRepo: PlacesRepository, val sharedPrefRepo: SharedPreferencesRepository) : BaseViewModel() {
 
     private var isLoading = MutableLiveData<Boolean>()
     private var places = MutableLiveData<PlacesResponse>()
+    private var realTimeConfig = MutableLiveData<Boolean>()
+
     private var lastKnownLocation: Location? = null
+
+    init {
+        realTimeConfig.value = getRealTimeUpdateConfig()
+    }
 
     /*
     * Request and fetch nearby places relative to the given location
@@ -29,7 +37,7 @@ class HomeActivityViewModel(val repo: PlacesRepository) : BaseViewModel() {
     * @param currentLocation user's current location
     * */
     private fun requestNearbyPlaces(currentLocation: com.doaa.nearby.model.Location) {
-        val placesObservable = repo.fetchNearbyPlaces(currentLocation)
+        val placesObservable = placesRepo.fetchNearbyPlaces(currentLocation)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ places ->
@@ -46,14 +54,6 @@ class HomeActivityViewModel(val repo: PlacesRepository) : BaseViewModel() {
 
     private fun handleNearbyPlacesFailure(err: Throwable) {
         isLoading.value = false
-    }
-
-    fun isLoading(): MutableLiveData<Boolean> {
-        return this.isLoading
-    }
-
-    fun updatedPlaces(): MutableLiveData<PlacesResponse> {
-        return this.places
     }
     /*
     * Calculate distance in meters between two latlng points,
@@ -79,6 +79,30 @@ class HomeActivityViewModel(val repo: PlacesRepository) : BaseViewModel() {
             requestNearbyPlaces(com.doaa.nearby.model.Location(currentLocation.latitude, currentLocation.longitude))
             lastKnownLocation = currentLocation
         }
+    }
+
+    /*
+    * Remember user realtime/single config by saving it to shared pref
+    */
+    fun setRealTimeUpdateConfig(){
+        val newRealTimeConfig = realTimeConfig.value?.not()
+        newRealTimeConfig?.let { sharedPrefRepo.putBoolean(Constants.BOOLEAN_REATIME_CONFIG, it)}
+    }
+
+    fun getRealTimeUpdateConfig(): Boolean? {
+      return sharedPrefRepo.getBoolean(Constants.BOOLEAN_REATIME_CONFIG, true) //default is realtime on = true
+    }
+
+    fun isLoading(): MutableLiveData<Boolean> {
+        return this.isLoading
+    }
+
+    fun updatedPlaces(): MutableLiveData<PlacesResponse> {
+        return this.places
+    }
+
+    fun realTimeConfig(): MutableLiveData<Boolean> {
+        return this.realTimeConfig
     }
 
 }
