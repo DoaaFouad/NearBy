@@ -10,7 +10,6 @@
 package com.doaa.nearby.viewmodel
 
 import android.location.Location
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.doaa.nearby.model.response.PlacesResponse
 import com.doaa.nearby.repository.PlacesRepository
@@ -22,7 +21,6 @@ class HomeActivityViewModel(val repo: PlacesRepository) : BaseViewModel() {
 
     private var isLoading = MutableLiveData<Boolean>()
     private var places = MutableLiveData<PlacesResponse>()
-    private var doRequestNewUpdate = MutableLiveData<Boolean>()
     private var lastKnownLocation: Location? = null
 
     /*
@@ -30,7 +28,7 @@ class HomeActivityViewModel(val repo: PlacesRepository) : BaseViewModel() {
     * Then handle success or failure of request
     * @param currentLocation user's current location
     * */
-    fun requestNearbyPlaces(currentLocation: com.doaa.nearby.model.Location): MutableLiveData<PlacesResponse> {
+    private fun requestNearbyPlaces(currentLocation: com.doaa.nearby.model.Location) {
         val placesObservable = repo.fetchNearbyPlaces(currentLocation)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -39,8 +37,6 @@ class HomeActivityViewModel(val repo: PlacesRepository) : BaseViewModel() {
             }, { err -> handleNearbyPlacesFailure(err) })
 
         compositeDisposable.add(placesObservable)
-
-        return places
     }
 
     private fun handleNearbyPlacesSuccess(places: PlacesResponse) {
@@ -56,16 +52,16 @@ class HomeActivityViewModel(val repo: PlacesRepository) : BaseViewModel() {
         return this.isLoading
     }
 
-    fun doRequestNewUpdate(): MutableLiveData<Boolean> {
-        return this.doRequestNewUpdate
+    fun updatedPlaces(): MutableLiveData<PlacesResponse> {
+        return this.places
     }
-
     /*
     * Calculate distance in meters between two latlng points,
-    * If greater than X meters => set doRequestNewUpdate true
+    * If greater than X meters => make fetch request
     * @param currentLocation new point that needs to be calculated relative to the last known location
     **/
     fun calculateDistance(currentLocation: Location) {
+        // TODO make calculations on background thread RX
         lastKnownLocation?.let {
             val results = FloatArray(1)
             Location.distanceBetween(
@@ -75,11 +71,13 @@ class HomeActivityViewModel(val repo: PlacesRepository) : BaseViewModel() {
                 currentLocation.longitude,
                 results
             )
-            doRequestNewUpdate.value = results[0] > Constants.CHECK_METERS_ALLOWED
-            lastKnownLocation = currentLocation
+            if(results[0] > Constants.CHECK_METERS_ALLOWED){
+                requestNearbyPlaces(com.doaa.nearby.model.Location(currentLocation.latitude, currentLocation.longitude))
+                lastKnownLocation = currentLocation
+            }
         } ?: kotlin.run {
+            requestNearbyPlaces(com.doaa.nearby.model.Location(currentLocation.latitude, currentLocation.longitude))
             lastKnownLocation = currentLocation
-            doRequestNewUpdate.value = true
         }
     }
 

@@ -36,9 +36,6 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
 
-    private var lastKnownLocation: Location? = null
-
-
     override fun initViews() {
         setUpPlacesRecyclerViewer()
         setupLocationProvider()
@@ -49,9 +46,11 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
             this.lifecycle
         }, { if (it) showLoading() else hideLoading() })
 
-        viewModel.doRequestNewUpdate().observe({
+        viewModel.updatedPlaces().observe({
             this.lifecycle
-        }, { if (it) requestToFetchPlaces(lastKnownLocation) })
+        }, {
+                places -> handlePlacesData(places)
+        })
     }
 
     /*
@@ -67,17 +66,6 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     */
     private fun handlePlacesData(places: PlacesResponse) {
         placeAdapter.setData(places.response?.groups?.get(0)?.items)
-    }
-
-    private fun requestToFetchPlaces(location: android.location.Location?) {
-        location?.let {
-            viewModel.requestNearbyPlaces(com.doaa.nearby.model.Location(it.latitude, it.longitude))
-                .observe({
-                    this.lifecycle
-                }, { places -> handlePlacesData(places) })
-        } ?: kotlin.run {
-            //TODO SOMETHING WRONG HAPPENED
-        }
     }
 
     /**
@@ -102,7 +90,6 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult ?: return
-                lastKnownLocation = locationResult.lastLocation
                 viewModel.calculateDistance(locationResult.lastLocation)
             }
         }
@@ -114,6 +101,10 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
             locationCallback,
             Looper.getMainLooper()
         )
+    }
+
+    private fun stopLocationUpdates() {
+      fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
     private fun checkUserPermissions() {
@@ -151,5 +142,11 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
         super.onResume()
 
         startLocationUpdates()
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        stopLocationUpdates()
     }
 }

@@ -9,6 +9,7 @@
 
 package com.doaa.nearby.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -35,9 +36,11 @@ class PlaceAdapter : RecyclerView.Adapter<PlaceViewHolder>() {
     }
 
     fun setData(placesData: MutableList<ItemData>?) {
-        placesList.clear()
-        placesData?.let { placesList = it }
-
-        notifyDataSetChanged()
+        if (!placesData.isNullOrEmpty()) {
+            //placesList.clear()
+            placesList = placesData
+            Log.d("SizePlaces", "" + placesData?.size)
+            notifyDataSetChanged()
+        }
     }
 }
