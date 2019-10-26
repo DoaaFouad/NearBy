@@ -9,10 +9,10 @@
 
 package com.doaa.nearby.di
 
-import com.doaa.nearby.repository.LocationsRepository
+import com.doaa.nearby.repository.PlacesRepository
 import org.koin.dsl.module
 
 val repositoryModule = module {
 
-    single { LocationsRepository(get()) }
+    single { PlacesRepository(get()) }
 }

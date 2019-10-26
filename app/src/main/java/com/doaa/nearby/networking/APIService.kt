@@ -9,7 +9,7 @@
 
 package com.doaa.nearby.networking
 
-import com.doaa.nearby.model.response.LocationsResponse
+import com.doaa.nearby.model.response.PlacesResponse
 import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -17,8 +17,8 @@ import retrofit2.http.Query
 interface APIService {
 
     @GET("/v2/venues/explore")
-    fun getNearbyLocations(@Query("ll") ll: String?, @Query("radius") radius: String?,
-                           @Query("client_id") clientId: String,
-                           @Query("client_secret") clientSecret: String,
-                           @Query("v") versioning: String): Single<LocationsResponse>
+    fun getNearbyPlaces(@Query("ll") ll: String?, @Query("radius") radius: String?,
+                        @Query("client_id") clientId: String,
+                        @Query("client_secret") clientSecret: String,
+                        @Query("v") versioning: String): Single<PlacesResponse>
 }

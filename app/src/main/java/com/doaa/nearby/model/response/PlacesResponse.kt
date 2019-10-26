@@ -9,10 +9,9 @@
 
 package com.doaa.nearby.model.response
 
-import com.doaa.nearby.model.Venue
 import com.google.gson.annotations.SerializedName
 
-data class LocationsResponse(
+data class PlacesResponse(
     @SerializedName("meta") var metadata: MetaData?,
     @SerializedName("response") var response: ResponseData?
 )
@@ -33,3 +32,26 @@ data class GroupData(
 data class ItemData(
     @SerializedName("venue") var venue: Venue?
 )
+
+data class Venue(
+    @SerializedName("id") val id: String?,
+    @SerializedName("name") val name: String?,
+    @SerializedName("location") val location: LocationData?,
+    @SerializedName("categories") val category: MutableList<CategoryData>?
+)
+
+data class LocationData(
+    @SerializedName("address") val address: String?,
+    @SerializedName("city") val city: String?,
+    @SerializedName("country") val country: String?
+)
+
+data class CategoryData(
+    @SerializedName("icon") val icon: IconData?
+)
+
+data class IconData(
+    @SerializedName("prefix") val prefix: String?,
+    @SerializedName("suffix") val suffix: String?
+)
+

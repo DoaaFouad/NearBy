@@ -22,5 +22,10 @@ abstract class BaseActivity<VM : ViewModel> : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(layoutRes)
+        initViews()
+        observeViewModel()
     }
+
+    abstract fun initViews()
+    abstract fun observeViewModel()
 }
