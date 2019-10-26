@@ -26,6 +26,7 @@ import org.koin.android.ext.android.inject
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import kotlinx.android.synthetic.main.view_shimmer_loader.*
 
 
 class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
@@ -47,10 +48,6 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     }
 
     override fun observeViewModel() {
-        viewModel.isLoading().observe({
-            this.lifecycle
-        }, { if (it) showLoading() else hideLoading() })
-
         viewModel.errorState().observe({
             this.lifecycle
         }, { if (it) showError() else hideError() })
@@ -92,6 +89,7 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     */
     private fun handlePlacesData(places: PlacesResponse) {
         rv_places?.visibility = View.VISIBLE
+        hideLoading()
         placeAdapter.setData(places.response?.groups?.get(0)?.items)
     }
 
@@ -103,6 +101,7 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         locationRequestConfig()
         setLocationCallBack()
+        getLastKnownLocation()
     }
 
     private fun locationRequestConfig(): LocationRequest? {
@@ -123,12 +122,17 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     }
 
     private fun getLastKnownLocation() {
+        showLoading()
         fusedLocationClient.lastLocation
             .addOnSuccessListener {
                 it?.let { viewModel.calculateDistance(it) }
-                    ?: kotlin.run { showError() } //Sometimes last location returns null if the device is new or restored
+                    ?: kotlin.run {
+                        showError()
+                        hideLoading()
+                    } //Sometimes last location returns null if the device is new or restored
             }.addOnFailureListener {
                 showError()
+                hideLoading()
             }
     }
 
@@ -179,23 +183,27 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     }
 
     private fun showLoading() {
-
+        layout_loading?.visibility = View.VISIBLE
+        shimmer_view_container?.startShimmer()
     }
 
     private fun hideLoading() {
-
+        layout_loading?.visibility = View.GONE
+        shimmer_view_container?.stopShimmer()
     }
 
     private fun showError() {
         layout_error?.visibility = View.VISIBLE
         layout_null?.visibility = View.GONE
         rv_places?.visibility = View.GONE
+        hideLoading()
     }
 
     private fun showNullState() {
         layout_error?.visibility = View.GONE
         layout_null?.visibility = View.VISIBLE
         rv_places?.visibility = View.GONE
+        hideLoading()
     }
 
     private fun hideError() {
@@ -243,15 +251,10 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        getLastKnownLocation()
-    }
-
     override fun onStop() {
         super.onStop()
 
         stopLocationUpdates()
+        hideLoading()
     }
 }

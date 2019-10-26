@@ -20,7 +20,6 @@ import io.reactivex.schedulers.Schedulers
 
 class HomeActivityViewModel(val placesRepo: PlacesRepository, val sharedPrefRepo: SharedPreferencesRepository) : BaseViewModel() {
 
-    private var isLoading = MutableLiveData<Boolean>()
     private var places = MutableLiveData<PlacesResponse>()
     private var realTimeConfig = MutableLiveData<Boolean>()
     private var nullState = MutableLiveData<Boolean>()
@@ -55,13 +54,11 @@ class HomeActivityViewModel(val placesRepo: PlacesRepository, val sharedPrefRepo
             this.places.value = places
             nullState.value = false
         }
-        isLoading.value = false
         errorState.value = false
     }
 
     private fun handleNearbyPlacesFailure(err: Throwable) {
         errorState.value = true
-        isLoading.value = false
     }
 
     /*
@@ -114,10 +111,6 @@ class HomeActivityViewModel(val placesRepo: PlacesRepository, val sharedPrefRepo
             Constants.BOOLEAN_REATIME_CONFIG,
             true
         ) //default is realtime on = true
-    }
-
-    fun isLoading(): MutableLiveData<Boolean> {
-        return this.isLoading
     }
 
     fun errorState(): MutableLiveData<Boolean> {

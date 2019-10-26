@@ -7,12 +7,17 @@
     <include
         android:id="@+id/layout_error"
         layout="@layout/view_error_state"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 
     <include
         android:id="@+id/layout_null"
         layout="@layout/view_null_state"
-        android:visibility="gone"/>
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/layout_loading"
+        layout="@layout/view_shimmer_loader"
+        android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_places"
