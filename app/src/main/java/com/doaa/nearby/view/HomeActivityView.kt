@@ -26,6 +26,7 @@ import org.koin.android.ext.android.inject
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.recyclerview.widget.DividerItemDecoration
 import kotlinx.android.synthetic.main.view_shimmer_loader.*
 
 
@@ -77,10 +78,15 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
     }
 
     /*
-    * Initial setup of recyclerviewer layoutManager and adapter
+    * Initial setup of recyclerviewer layoutManager, divider decorator and adapter
     */
     private fun setUpPlacesRecyclerViewer() {
         rv_places?.layoutManager = LinearLayoutManager(this)
+
+        val dividerItemDecoration = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
+        ContextCompat.getDrawable(this, R.drawable.row_divider)?.let { dividerItemDecoration.setDrawable(it) }
+        rv_places?.addItemDecoration(dividerItemDecoration)
+
         rv_places?.adapter = placeAdapter
     }
 

@@ -2,7 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_settings"
-        app:showAsAction="never"
+        app:showAsAction="always"
         android:title="@string/actionbar_realtime_on">
     </item>
 
