@@ -13,6 +13,7 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.doaa.nearby.model.response.Venue
+import com.doaa.nearby.util.Constants
 import kotlinx.android.synthetic.main.row_place.view.*
 
 class PlaceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -27,7 +28,7 @@ class PlaceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         itemView.context?.let {
             val icon = venue?.category?.get(0)?.icon
             Glide.with(it)
-                .load("${icon?.prefix}${icon?.suffix}") //Prefix + Size + Suffix
+                .load("${icon?.prefix}bg_${Constants.ICON_PREFERED_SIZE}${icon?.suffix}") //Prefix + bg + Size + Suffix
                 .into(itemView.iv_locationImg)
         }
     }

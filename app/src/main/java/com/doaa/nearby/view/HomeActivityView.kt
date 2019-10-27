@@ -69,10 +69,8 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
         }, {
             if (it) {
                 startLocationUpdates()
-                setRealTimeConfigUI(false)
             } else {
                 stopLocationUpdates()
-                setRealTimeConfigUI(true)
             }
         })
     }
@@ -84,7 +82,8 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
         rv_places?.layoutManager = LinearLayoutManager(this)
 
         val dividerItemDecoration = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
-        ContextCompat.getDrawable(this, R.drawable.row_divider)?.let { dividerItemDecoration.setDrawable(it) }
+        ContextCompat.getDrawable(this, R.drawable.row_divider)
+            ?.let { dividerItemDecoration.setDrawable(it) }
         rv_places?.addItemDecoration(dividerItemDecoration)
 
         rv_places?.adapter = placeAdapter
@@ -227,6 +226,16 @@ class HomeActivityView : BaseActivity<HomeActivityViewModel>() {
         this.menu = menu
         val inflater = menuInflater
         inflater.inflate(com.doaa.nearby.R.menu.action_bar, menu)
+
+        viewModel.realTimeConfig().observe({
+            this.lifecycle
+        }, {
+            if (it) {
+                setRealTimeConfigUI(false)
+            } else {
+                setRealTimeConfigUI(true)
+            }
+        })
 
         return true
     }
